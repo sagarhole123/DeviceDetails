@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Device Input Form</title>
+</head>
+
+<body>
+    <form id="deviceForm" method="post" action="http://localhost:8080/submit">
+        <label for="deviceSerialNumber">Device Serial Number:</label>
+        <input type="text" id="deviceSerialNumber" name="deviceSerialNumber" required><br><br>
+
+        <label for="postNumber">Post Number:</label>
+        <select id="postNumber" name="postNumber" required>
+            <option value="">Select Post Number</option>
+            <option value="1">ABC</option>
+            <option value="2">100</option>
+            <option value="3">100ABC</option>
+        </select><br><br>
+
+        <button type="submit">Submit</button>
+        <button type="button" onclick="downloadSignature()">Download Signature</button>
+    </form>
+
+    <script>
+        function downloadSignature() {
+            const deviceSerialNumber = document.getElementById('deviceSerialNumber').value;
+            const postNumber = document.getElementById('postNumber').value;
+
+            if (!deviceSerialNumber || !postNumber) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('deviceSerialNumber', deviceSerialNumber);
+            formData.append('postNumber', postNumber);
+
+            fetch('http://localhost:8080/downloadSignature', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const element = document.createElement('a');
+                    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data.signature));
+                    element.setAttribute('download', 'signature.txt');
+                    element.style.display = 'none';
+                    document.body.appendChild(element);
+                    element.click();
+                    document.body.removeChild(element);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+
+</html>
